@@ -1,0 +1,36 @@
+- name: Intsall DEB
+  apt:
+    deb: https://packages.graylog2.org/repo/packages/graylog-4.2-repository_latest.deb
+- name: Update System cache
+  apt:
+    update_cache: yes
+- name: Installing Graylog Modules
+  apt:
+    name: "{{ item }}"
+  loop:
+    - graylog-server 
+    - graylog-enterprise-plugins 
+    - graylog-integrations-plugins 
+    - graylog-enterprise-integrations-plugins
+- name: Enable Graylog
+  systemd: 
+    name: graylog-server.service
+    enabled: yes
+  ignore_errors: yes
+- name: Template graylog config
+  template:
+    src: "server.conf.j2"
+    dest: /etc/graylog/server/server.conf
+    mode: '0644'
+    owner: 'root'
+    group: 'root'
+    backup: yes
+- name: Start Graylog
+  systemd: 
+    name: graylog-server.service
+    state: started
+  ignore_errors: yes
+- name: NGINX reload
+  service: 
+    name: nginx 
+    state: reloaded

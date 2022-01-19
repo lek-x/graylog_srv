@@ -1,0 +1,8 @@
+!terraform.tfvars
+/.terraform
+terraform.tfstate
+id_rsa.pub
+terraform.tfstate.backup
+errored.tfstate
+.terraform.lock.hcl
+optimize.txt

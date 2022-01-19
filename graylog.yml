@@ -1,0 +1,67 @@
+- name: "Setting up graylog"
+  hosts: monitoring
+  gather_facts: yes
+  become: true
+  vars:
+    pwd_alias: "{{ lookup('password', '/dev/null length=96 chars=ascii_letters') }}"
+  vars_prompt:
+    - name: "root_email"    
+      prompt: "Enter root email [graylog]"
+      private: no
+    - name: "smtp_server"
+      prompt: "Enter smtp server [graylog]"
+      private: no
+    - name: "smtp_port"
+      prompt: "Enter smtp port [graylog]"
+      private: no
+      default: "465"
+    - name: "auth_smtp"
+      prompt: "Use auth true/fasle [graylog]"
+      private: no
+      default: "true"
+    - name: "use_tls"
+      prompt: "Use tls true/false [graylog]"
+      private: no
+      default: "false"
+    - name: "use_ssl"
+      prompt: "Use ssl true/false [graylog]"
+      private: no
+      default: "true"
+    - name: "user_name"
+      prompt: "Enter auth username for SMTP [graylog]"
+      private: no
+    - name: "from_email"
+      prompt: "Enter full email adress which uses for sending notification"
+      private: no
+    - name: "root_pass"
+      prompt: "Enter pass for graylog root"
+      private: no
+      encrypt: sha256_crypt
+    - name: "smtp"
+      prompt: "Enter pass for smtp server"
+      private: yes
+      confirm: yes
+    - name: "login_nginx"
+      prompt: "Enter login for access to web page"
+      private: no
+    - name: "pass_nginx"
+      prompt: "Enter pass for access to web page"
+      private: yes
+      confirm: yes
+      encrypt: md5_crypt      
+  tasks:
+    - name: Debug Show password secret
+      debug:
+        msg: "{{ pwd_alias }}"       
+    - name: Debug Show root pass
+      debug:
+        msg: "{{ root_pass }}"
+  roles:
+   - update_system
+   - install_requerements
+   - install_nginx
+   - install_elk
+   - install_logstash
+   - install_filebeat
+   - install_mongodb
+   - install_graylog

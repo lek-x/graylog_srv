@@ -1,0 +1,50 @@
+- name: Install key Elasticksearch
+  apt_key:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present 
+- name: Addin info to local repo
+  lineinfile:
+    line: 'deb https://artifacts.elastic.co/packages/7.x/apt stable main'
+    state: present
+    insertafter: EOF
+    create: yes
+    path: /etc/apt/sources.list.d/elastic-7.x.list
+- name: Update System cache
+  apt:
+    update_cache: yes
+  tags:
+    - update_system   
+- name: Install elasticsearch
+  apt:
+    name: elasticsearch
+    state: present
+- name: Enable elastic
+  systemd: 
+    name: elasticsearch.service
+    enabled: yes
+  ignore_errors: yes
+- name: Template jvm
+  template:
+    src: "jvm.options.j2"
+    dest: /etc/elasticsearch/jvm.options
+    owner: root
+    group: elasticsearch
+    backup: yes
+- name: Template elasticsearch
+  template:
+    src: "elasticsearch.yml.j2"
+    dest: /etc/elasticsearch/elasticsearch.yml
+    owner: root
+    group: elasticsearch
+    backup: yes
+- name: Export Java setting for Elasticsearch    
+  shell: |
+    export ES_JAVA_OPTS="-Des.index.max_number_of_shards=1"
+    export ES_JAVA_OPTS="-Des.index.number_of_replicas=0"
+  tags:
+    - optimize_elc  
+- name: Restart elastic
+  systemd: 
+    name: elasticsearch.service 
+    state: restarted
+  ignore_errors: yes

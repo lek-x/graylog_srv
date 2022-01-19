@@ -1,0 +1,27 @@
+- name: Install key Mongodb
+  apt_key:
+    url: https://www.mongodb.org/static/pgp/server-4.2.asc
+    state: present
+- name: Add info to local repo(Mongodb)
+  lineinfile:
+    line: 'deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.2 multiverse'
+    state: present
+    insertafter: EOF
+    create: yes
+    path: /etc/apt/sources.list.d/mongodb-org-4.2.list
+- name: Update System cache
+  apt:
+    update_cache: yes
+- name: Install mongodb
+  apt:
+    name: mongodb-org
+    state: latest
+- name: Enable Mongodb
+  systemd: 
+    name: mongod.service
+    enabled: yes    
+- name: Start Mongodb
+  systemd: 
+    name: mongod.service
+    state: started
+  ignore_errors: yes

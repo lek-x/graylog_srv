@@ -1,0 +1,76 @@
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /var/log/nginx/access.log
+  exclude_files: ['\.gz$']
+  fields:
+    type: nginx_access
+  fields_under_root: true
+  scan_frequency: 5s
+- type: log
+  enabled: true
+  paths:
+    - /var/log/nginx/error.log
+  exclude_files: ['\.gz$']
+  fields:
+    type: nginx_error
+  fields_under_root: true
+  scan_frequency: 5s
+- type: log
+  enabled: true
+  paths:
+    - /var/log/syslog
+  fields:
+    type: syslog
+  fields_under_root: true
+  scan_frequency: 10s
+- type: log
+  enabled: true
+  paths:
+    - /var/log/auth.log
+  fields:
+    type: auth
+  fields_under_root: true
+  scan_frequency: 10s
+- type: log
+  enabled: true
+  paths:
+    - /var/log/nginx/project_access.log
+  exclude_files: ['\.gz$']
+  fields:
+    type: nginx_project_access
+  fields_under_root: true
+  scan_frequency: 5s
+- type: log
+  enabled: true
+  paths:
+    - /var/log/nginx/project_error.log
+  exclude_files: ['\.gz$']
+  fields:
+    type: nginx_project_error
+  fields_under_root: true
+  scan_frequency: 5s
+filebeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: false
+setup.template.settings:
+  index.number_of_shards: 1
+  #index.codec: best_compression
+  #_source.enabled: false
+output.logstash:
+  hosts: ["localhost:5044"]
+processors:
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - add_kubernetes_metadata: ~
+logging:
+  level: warning
+  to_files: true
+  to_syslog: false
+  files:
+    path: /var/log/filebeat
+    name: filebeat.log
+    keepfiles: 2

@@ -1,0 +1,46 @@
+- name: Install logstash
+  apt:
+    name: logstash
+    state: present
+    
+- name: Enable logstash
+  systemd: 
+    name: logstash
+    enabled: yes  
+    
+- name: Template jvm
+  template:
+    src: "jvm.options.j2"
+    dest: /etc/logstash/jvm.options
+    owner: root
+    group: logstash
+    backup: yes
+- name: Template logstash
+  template:
+    src: "logstash.yml.j2"
+    dest: /etc/logstash/logstash.yml
+    owner: root
+    group: logstash
+    backup: yes 
+#- name: Copy GEO-IP Database
+#  copy:
+#    src: files/GeoLite2-ASN.mmdb
+#    dest: /etc/logstash/GeoLite2-ASN.mmdb
+#    owner: root
+#    group: logstash
+#    mode: '0644'
+#  tags:
+#   - copy_db
+#    
+- name: Template sys
+  template:
+    src: "logstash-sample.conf.j2"
+    dest: /etc/logstash/conf.d/logstash-sample.conf
+    owner: root
+    group: root
+    backup: yes  
+- name: Reload logstash
+  service: 
+    name: logstash
+    state: restarted
+  ignore_errors: yes    

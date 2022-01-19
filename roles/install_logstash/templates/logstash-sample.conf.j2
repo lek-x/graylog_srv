@@ -1,0 +1,52 @@
+input {
+  beats {
+    port => 5044
+  }
+}
+
+filter {
+ if [type] == "nginx_access" {
+    grok {
+        match => { "message" => "%{IPORHOST:remote_ip} - %{DATA:user} \[%{HTTPDATE:access_time}\] \"%{WORD:http_method} %{DATA:url} HTTP/%{NUMBER:http_version}\" %{NUMBER:response_code} %{NUMBER:body_sent_bytes} \"%{DATA:referrer}\" \"%{DATA:agent}\"" }
+    }
+  }
+  
+ if [type] == "nginx_error" {
+    grok {
+        match => { "message" => '%{DATE:date} %{TIME:time} %{SYSLOG5424SD:message} %{GREEDYDATA:message} %{IP:remote_ip}, server: %{URIHOST:remote_host}, %{WORD:what}:\ \"%{WORD:http_method} %{DATA:url} HTTP/%{NUMBER:http_version}\", host: \"%{IP:host}\"'}
+    }
+  } 
+  
+ if [type] == "nginx_project_error" {
+    grok {
+        match => { "message" => '%{DATE:date} %{TIME:time} %{SYSLOG5424SD:message} %{GREEDYDATA:message} %{IP:remote_ip}, server: %{URIHOST:remote_host}, %{WORD:what}:\ \"%{WORD:http_method} %{DATA:url} HTTP/%{NUMBER:http_version}\", host: \"%{IP:host}\"'}
+    }
+  } 
+  
+ if [type] == "nginx_project_access" {
+    grok {
+        match => { "message" => "%{IPORHOST:remote_ip} - %{DATA:user} \[%{HTTPDATE:access_time}\] \"%{WORD:http_method} %{DATA:url} HTTP/%{NUMBER:http_version}\" %{NUMBER:response_code} %{NUMBER:body_sent_bytes} \"%{DATA:referrer}\" \"%{DATA:agent}\"" }
+    }
+  }  
+  
+ if [type] == "syslog" {
+    grok {
+        match => { "message" => "%{SYSLOGLINE}" }
+    }
+  }
+ if [type] == "auth" {
+    grok {
+        match => { "message" => "%{SYSLOGLINE}" }
+    }
+  }  
+  date {
+        match => [ "timestamp" , "dd/MMM/YYYY:HH:mm:ss Z" ]
+  }
+}
+output {
+  gelf {
+    host => "127.0.0.1"
+    port  => 12201
+    id => "test1"
+  }
+}
